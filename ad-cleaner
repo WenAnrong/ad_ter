@@ -1,0 +1,77 @@
+#!/usr/bin/env bash
+# ad-cleaner — Linux Pro 纯净版「会员系统」（整活专用）
+# 用法: ad-cleaner [--buy-vip|--status|--uninstall]
+
+set -euo pipefail
+
+AD_TER_DIR="$HOME/.ad_ter"
+AD_TER_VIP="$AD_TER_DIR/vip"
+# 二维码指向的链接，可自行改成自己的整活页面/收款码
+AD_TER_VIP_URL="${AD_TER_VIP_URL:-https://www.example.com/buy-linux-pro}"
+
+GREEN='\033[0;32m'; YELLOW='\033[1;33m'; RED='\033[0;31m'; NC='\033[0m'
+
+is_vip() { [ -f "$AD_TER_VIP" ]; }
+
+_show_qr() {
+  printf '  ================================================\n'
+  printf '        Linux Pro 纯净版 · 仅需 ¥99\n'
+  printf '        扫码立即开通，从此告别广告烦恼\n'
+  printf '  ================================================\n\n'
+  if command -v qrencode >/dev/null 2>&1; then
+    qrencode -t UTF8 -m 1 "$AD_TER_VIP_URL" 2>/dev/null || true
+  else
+    printf '  [ 此处本该有个二维码，请自行脑补 ]\n'
+  fi
+  printf '\n  链接: %s\n\n' "$AD_TER_VIP_URL"
+}
+
+_buy_vip() {
+  if is_vip; then
+    printf '  你已经是尊贵的 Linux Pro 会员了，无需重复购买。\n'
+    return 0
+  fi
+  _show_qr
+  printf '  正在验证支付结果...\n'
+  sleep 2
+  printf '  ✅ 支付成功！Linux Pro 纯净版已开通（有效期至 2099-12-31）\n'
+  mkdir -p "$AD_TER_DIR"
+  {
+    printf '会员等级：尊贵の Linux Pro\n'
+    printf '开通时间：%s\n' "$(date '+%Y-%m-%d %H:%M:%S')"
+  } > "$AD_TER_VIP"
+  printf '  会员标志已写入: %s\n' "$AD_TER_VIP"
+  printf '  下次打开终端即享无广告体验～（其实谁扫都能开，笑）\n'
+}
+
+_status() {
+  if is_vip; then
+    printf '  当前状态：✅ 已开通 Linux Pro 纯净版\n'
+  else
+    printf '  当前状态：😈 普通用户，广告轰炸中\n'
+  fi
+}
+
+_uninstall() {
+  if [ -f "$AD_TER_DIR/install.sh" ]; then
+    bash "$AD_TER_DIR/install.sh" --uninstall
+  else
+    printf '  未找到卸载脚本 %s/install.sh\n' "$AD_TER_DIR"
+    printf '  请手动删除 %s 并移除 rc 文件中的 ad_ter 相关行。\n' "$AD_TER_DIR"
+  fi
+}
+
+_usage() {
+  printf '用法: ad-cleaner [--buy-vip | --status | --uninstall]\n'
+  printf '  --buy-vip     支付 ¥99 开通纯净版（扫码即可，反正不扣钱）\n'
+  printf '  --status      查看当前会员状态\n'
+  printf '  --uninstall   彻底卸载 ad_ter\n'
+}
+
+case "${1:-}" in
+  --buy-vip|-v)    _buy_vip ;;
+  --status|-s)     _status ;;
+  --uninstall|-u)  _uninstall ;;
+  -h|--help)       _usage ;;
+  *)               _usage ;;
+esac

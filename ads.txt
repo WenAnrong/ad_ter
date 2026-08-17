@@ -1,0 +1,6 @@
+# ad_ter 广告数据：每行一条，格式「标题|URL」
+# 空行与 # 开头行会被忽略；标题尽量短，英文标题会用 figlet 呈现大字
+屠龙宝刀，点击就送|https://example.com/dragon-blade
+学 Python 到某机构，输入优惠码 LINUX 享 8 折|https://example.com/python-course
+充 100 送 100，一刀 999 级|https://example.com/game-charge
+震惊！隔壁老王看了都说好的神秘链接|https://example.com/shock
