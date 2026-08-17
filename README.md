@@ -1,6 +1,6 @@
 # ad_ter —— 终端整活广告
 
-把「开屏广告 + 会员去广告」塞进你的 Linux/macOS 终端，纯属整活，博君一笑。
+把「开屏广告 + 会员去广告」塞进你的 Debian/Ubuntu 终端，纯属整活，博君一笑。
 
 ## 特性
 
@@ -29,16 +29,15 @@
 ## 安装
 
 ```bash
-./install.sh            # 安装（复制文件 + 写入 bash/zsh 配置 + 可选依赖）
-./install.sh --skip-deps  # 安装，但跳过 qrencode 自动安装
+./install.sh            # 安装（复制文件 + 写入 bash/zsh 配置 + 强制安装 qrencode）
 ```
 
 安装器会：
 
 1. 把脚本复制到 `~/.ad_ter/`；
-2. 往 `~/.bashrc` / `~/.zshrc`（以及 macOS 的 `~/.bash_profile` / `~/.profile`，若存在）追加一行 `source`；
+2. 往 `~/.bashrc` / `~/.zshrc` 追加一行 `source`；
 3. 把 `~/.ad_ter` 加进 `PATH`，使 `ad-cleaner` 可直接调用；
-4. 可选：尝试 `sudo apt-get install -y qrencode`（装不上也不影响使用）。
+4. 强制安装依赖：`sudo apt-get install -y qrencode`（装不上则安装中止）。
 
 > 仅限普通用户运行，root 执行会被拒绝。
 > 装完重新开终端，或 `source ~/.bashrc`（`source ~/.zshrc`）立即生效。
@@ -77,9 +76,9 @@ ad_ter/
 
 ## 兼容性
 
-- Shell：bash / zsh（`ad_ter.sh` 按两者共通语法编写）。
-- 系统：Linux（主要）、macOS（安装器做了登录 shell 适配）。
-- 依赖：`qrencode` 可选（没有则二维码显示占位符），其余零依赖。
+- 系统：Debian / Ubuntu（仅保证这两个发行版可用）。
+- Shell：bash / zsh。
+- 依赖：`qrencode`（安装时通过 apt 强制安装），其余零依赖。
 
 ## 免责声明
 
