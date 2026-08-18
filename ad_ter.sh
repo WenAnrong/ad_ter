@@ -32,6 +32,10 @@ _random_ad() {
 
 # ---- 命令拦截：ls / pwd，30% 概率在输出末尾插一条广告 ----
 # 仅在 stdout 是真终端（[ -t 1 ]）时插入，重定向/管道一律不插，避免污染文件与管道。
+# 必须先 unalias：交互 shell 会展开别名，直接写 `ls() {` 会被展开成 `ls --color=auto() {` 而报语法错误。
+unalias ls 2>/dev/null
+unalias pwd 2>/dev/null
+
 _print_hook_ad() {
   local ad
   ad=$(_random_ad) || return 0
@@ -39,7 +43,8 @@ _print_hook_ad() {
 }
 
 ls() {
-  command ls "$@"
+  # unalias 后显式补回 --color=auto，保持 Debian/Ubuntu 默认的彩色输出
+  command ls --color=auto "$@"
   if [ -t 1 ] && [ $((RANDOM % 100)) -lt 30 ]; then
     _print_hook_ad
   fi
