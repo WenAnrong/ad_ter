@@ -1,6 +1,6 @@
 # ad_ter —— 终端整活广告
 
-把「开屏广告」塞进你的 Debian/Ubuntu 终端，纯属整活，博君一笑。
+把「开屏广告」塞进你的 Linux 终端，纯属整活，博君一笑。
 
 ## 特性
 
@@ -68,9 +68,9 @@ ad_ter/
 
 ## 兼容性
 
-- 系统：Debian / Ubuntu（仅保证这两个发行版可用）。
+- 系统：主流 Linux 发行版（Debian / Ubuntu / Fedora / Arch / openSUSE / CentOS 等），已实测 Debian/Ubuntu 系。
 - Shell：bash / zsh。
-- 依赖：零依赖，仅用系统自带命令。
+- 依赖：零依赖，仅用系统自带命令（`shuf`、`wc -L` 均有降级兜底）。
 
 ## 免责声明
 
