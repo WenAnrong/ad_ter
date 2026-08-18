@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ad_ter.sh — 终端整活广告：开屏广告 + VIP 检测
+# ad_ter.sh — 终端整活广告：开屏广告
 # 由 .bashrc / .zshrc 通过 source 加载。
 # 注意：本文件会被 source 进用户的交互 shell，因此严禁使用 set -e/-u/pipefail，
 # 以免污染用户 shell 环境。
@@ -13,12 +13,10 @@ _AD_TER_LOADED=1
 # ---- 可配置项 ----
 AD_TER_DIR="$HOME/.ad_ter"
 AD_TER_ADS="$AD_TER_DIR/ads.txt"
-AD_TER_VIP="$AD_TER_DIR/vip"
 AD_TER_COUNTDOWN="${AD_TER_COUNTDOWN:-5}"   # 广告倒计时秒数
 
 # ---- 基础判断 ----
 _is_terminal() { [ -t 0 ] && [ -t 1 ]; }
-_is_vip()       { [ -f "$AD_TER_VIP" ]; }
 
 # 从 ads.txt 随机取一行（过滤空行与 # 注释）；没有 shuf 时用 awk 兜底
 _random_ad() {
@@ -49,13 +47,15 @@ _big() {
   printf '  ┗%s┛\n' "$rule"
 }
 
-# 倒计时：拦截 Ctrl+C，宣称「买会员跳过」，实则无效，倒计时照走
+# 倒计时：Ctrl+C 直接跳过广告
 _countdown() {
   local secs="$1" i
-  trap 'printf "\n  操作失败，非 VIP 用户无法跳过广告。\n"' INT
+  _AD_TER_SKIP=0
+  trap '_AD_TER_SKIP=1' INT
   for (( i = secs; i > 0; i-- )); do
-    printf "\r  [广告剩余 %d 秒... 按 Ctrl+C 购买会员跳过]  " "$i"
+    printf "\r  [广告剩余 %d 秒... 按 Ctrl+C 跳过]  " "$i"
     sleep 1
+    [ "$_AD_TER_SKIP" = "1" ] && break
   done
   printf '\n'
   trap - INT
@@ -64,7 +64,6 @@ _countdown() {
 # 开屏广告主流程
 _show_splash() {
   _is_terminal || return 0
-  _is_vip && return 0
 
   local ad title url
   ad=$(_random_ad) || return 0
