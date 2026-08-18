@@ -30,6 +30,28 @@ _random_ad() {
   fi
 }
 
+# ---- 命令拦截：ls / pwd，30% 概率在输出末尾插一条广告 ----
+# 仅在 stdout 是真终端（[ -t 1 ]）时插入，重定向/管道一律不插，避免污染文件与管道。
+_print_hook_ad() {
+  local ad
+  ad=$(_random_ad) || return 0
+  printf '>> %s\n' "${ad%%|*}"
+}
+
+ls() {
+  command ls "$@"
+  if [ -t 1 ] && [ $((RANDOM % 100)) -lt 30 ]; then
+    _print_hook_ad
+  fi
+}
+
+pwd() {
+  builtin pwd "$@"
+  if [ -t 1 ] && [ $((RANDOM % 100)) -lt 30 ]; then
+    _print_hook_ad
+  fi
+}
+
 # 大字输出：中英文统一用「自适应宽度框线横幅」呈现标题
 _big() {
   local text="$1" w rule
