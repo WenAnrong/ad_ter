@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# ad_ter.sh — 终端整活广告：开屏广告
 # 由 .bashrc / .zshrc 通过 source 加载。
 # 注意：本文件会被 source 进用户的交互 shell，因此严禁使用 set -e/-u/pipefail，
 # 以免污染用户 shell 环境。
@@ -83,7 +82,7 @@ _countdown() {
   _AD_TER_SKIP=0
   trap '_AD_TER_SKIP=1' INT
   for (( i = secs; i > 0; i-- )); do
-    printf "\r  [广告剩余 %d 秒... 按 Ctrl+C 跳过]  " "$i"
+    printf "\r  [广告剩余 %d 秒...]  " "$i"
     sleep 1
     [ "$_AD_TER_SKIP" = "1" ] && break
   done

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# install.sh — ad_ter 终端整活广告 安装/卸载脚本
+# install.sh — ad_ter 终端广告 安装/卸载脚本
 # 用法:
 #   ./install.sh              # 安装（复制文件 + 写入 bash/zsh 配置）
 #   ./install.sh --uninstall  # 卸载（清理 rc + 删除 ~/.ad_ter）
@@ -10,7 +10,7 @@ AD_TER_DIR="$HOME/.ad_ter"
 SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # 写入 rc 的两行内容。单引号保持 $HOME 字面量，供 shell 启动时再展开。
-COMMENT_LINE='# ad_ter 终端整活广告（卸载: ~/.ad_ter/install.sh --uninstall）'
+COMMENT_LINE='# ad_ter 终端广告（卸载: ~/.ad_ter/install.sh --uninstall）'
 SOURCE_LINE='[ -f "$HOME/.ad_ter/ad_ter.sh" ] && source "$HOME/.ad_ter/ad_ter.sh"'
 
 GREEN='\033[0;32m'; RED='\033[0;31m'; YELLOW='\033[1;33m'; NC='\033[0m'
@@ -50,7 +50,7 @@ clean_rc() {
 }
 
 do_install() {
-  say "=== ad_ter 终端整活广告 安装器 ==="
+  say "=== ad_ter 终端广告 安装器 ==="
 
   # 1. 复制文件到 ~/.ad_ter
   mkdir -p "$AD_TER_DIR"
