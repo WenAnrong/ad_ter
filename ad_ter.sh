@@ -37,9 +37,12 @@ unalias ls 2>/dev/null
 unalias pwd 2>/dev/null
 
 _print_hook_ad() {
-  local ad
+  local ad title url
   ad=$(_random_ad) || return 0
-  printf '>> %s\n' "${ad%%|*}"
+  title="${ad%%|*}"
+  url="${ad#*|}"
+  # 标题做成 OSC 8 超链接（终端支持即可点击）；URL 同时明文显示，兼容不支持超链接的终端
+  printf '>> \033]8;;%s\033\\%s\033]8;;\033\\ (%s)\n' "$url" "$title" "$url"
 }
 
 ls() {
