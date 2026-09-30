@@ -4,10 +4,18 @@
 #   ./install.sh              # 安装（复制文件 + 写入 bash/zsh 配置）
 #   ./install.sh --uninstall  # 卸载（清理 rc + 删除 ~/.ad_ter）
 
-set -euo pipefail
+# 被 source 执行时不设置选项，避免改变用户当前 shell 的行为
+if { [ -n "${BASH_VERSION:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; }; then
+  :
+elif [ -n "${ZSH_VERSION:-}" ] && [[ "${ZSH_EVAL_CONTEXT:-}" == :file:* ]]; then
+  :
+else
+  set -euo pipefail
+fi
 
 AD_TER_DIR="$HOME/.ad_ter"
-SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# bash 用 BASH_SOURCE；zsh source 时 $0 即为本脚本路径（默认 FUNCTION_ARGZERO）
+SRC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]:-$0}")" && pwd)"
 
 # 写入 rc 的两行内容。单引号保持 $HOME 字面量，供 shell 启动时再展开。
 COMMENT_LINE='# ad_ter 终端广告（卸载: ~/.ad_ter/install.sh --uninstall）'
@@ -18,6 +26,37 @@ say()  { printf '%b\n' "$*"; }
 ok()   { printf "${GREEN}✓${NC} %b\n" "$*"; }
 warn() { printf "${YELLOW}!${NC} %b\n" "$*"; }
 err()  { printf "${RED}✗${NC} %b\n" "$*"; }
+
+# 根据当前登录 shell 自动判断应写入的 rc 文件
+detect_rc() {
+  case "$(basename "${SHELL:-}")" in
+    zsh)  printf '%s' "$HOME/.zshrc" ;;
+    bash) printf '%s' "$HOME/.bashrc" ;;
+    *)
+      # $SHELL 异常时的兜底：优先已存在的 rc，其次按 zsh/bash 可用来判断
+      if [ -f "$HOME/.zshrc" ]; then
+        printf '%s' "$HOME/.zshrc"
+      elif [ -f "$HOME/.bashrc" ]; then
+        printf '%s' "$HOME/.bashrc"
+      elif command -v zsh >/dev/null 2>&1; then
+        printf '%s' "$HOME/.zshrc"
+      else
+        printf '%s' "$HOME/.bashrc"
+      fi
+      ;;
+  esac
+}
+
+# 判断是否被 source 执行（当前 shell 直接 . / source）
+is_sourced() {
+  if [ -n "${BASH_VERSION:-}" ] && [ "$0" != "${BASH_SOURCE[0]}" ]; then
+    return 0
+  fi
+  if [ -n "${ZSH_VERSION:-}" ] && [[ "${ZSH_EVAL_CONTEXT:-}" == :file:* ]]; then
+    return 0
+  fi
+  return 1
+}
 
 # 将 ad_ter 两行追加到某个 rc 文件（幂等：已安装则跳过）
 append_rc() {
@@ -73,14 +112,30 @@ do_install() {
     ok "已复制: ads.txt -> $AD_TER_DIR/ads.txt"
   fi
 
-  # 2. 写入 bash / zsh 配置
-  append_rc "$HOME/.bashrc"
-  append_rc "$HOME/.zshrc"
+  # 2. 自动检测当前 shell，只写入对应的 rc 文件
+  local rc_file
+  rc_file="$(detect_rc)"
+  append_rc "$rc_file"
 
   say ""
   ok "安装完成！"
-  say "  立即生效: source ~/.bashrc   （或 ~/.zshrc）"
+  say "  配置文件: $rc_file"
   say "  卸载方式: $AD_TER_DIR/install.sh --uninstall"
+
+  # 3. 安装完毕后自动加载 rc 使其立即生效
+  #    - 脚本被 source 执行时：直接在当前 shell 加载
+  #    - 普通 ./install.sh 执行时：exec 一个新的登录 shell（替换当前进程）
+  if is_sourced; then
+    say "  正在加载: source $rc_file"
+    # shellcheck disable=SC1090
+    source "$rc_file"
+    ok "已在当前 shell 生效"
+  elif [ -t 0 ] && [ -t 1 ]; then
+    say "  即将重载 shell 使配置立即生效 ..."
+    exec "${SHELL:-/bin/bash}" -l
+  else
+    warn "  非交互环境，请手动执行: source $rc_file"
+  fi
 }
 
 do_uninstall() {
